@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./cash.db"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("user") // user, admin
+  balance      Float    @default(0.0)
+  isBanned     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  
+  transactions Transaction[]
+  deposits     Deposit[]
+  withdrawals  Withdrawal[]
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // deposit, withdrawal, bet, payout, admin
+  amount      Float
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model Deposit {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  method      String
+  status      String   @default("pending") // pending, approved, rejected
+  createdAt   DateTime @default(now())
+}
+
+model Withdrawal {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  destination String
+  status      String   @default("pending") // pending, approved, rejected
+  createdAt   DateTime @default(now())
+}

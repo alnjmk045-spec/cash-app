@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<title>CASH - منصة الألعاب والمراهنات الرياضية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0b0d15; --card: #161a25; --gold: #f3b936; --text: #ffffff; --muted: #6f7787; --border: #232733; --red: #ff4d4d; --green: #20c997; }
+  * { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  .view { display: none; padding: 15px; }
+  .view.active { display: block; }
+  
+  .header { background: rgba(11,13,21,0.9); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+  .logo { font-weight: 900; font-size: 20px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+  .logo-img { width: 30px; height: 30px; border-radius: 8px; background: var(--gold); display: grid; place-items: center; color: #000; font-weight: bold; }
+
+  /* --- صالة الألعاب --- */
+  .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+  .game-tile { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+  .game-tile:active { transform: scale(0.95); border-color: var(--gold); }
+  .game-img { width: 50px; height: 50px; object-fit: contain; margin: 0 auto; display: block; }
+  .game-tile h4 { margin: 10px 0 0; font-size: 14px; }
+  .game-tile .badge { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 5px; }
+
+  /* --- واجهة اللعب --- */
+  .game-wrapper { background: #0f111a; border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-top: 10px; }
+  .game-ctrl-btn { background: var(--gold); color: #000; font-weight: bold; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+  .rules-btn { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; margin: 10px 0; }
+  .rules-table { display: grid; grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 1fr; gap: 2px; background: var(--card); text-align: center; font-size: 13px; font-weight: bold; margin-top: 10px; }
+  .rules-table div { padding: 6px 0; border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; }
+  
+  /* --- المباريات الرياضية --- */
+  .match-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .match-top { display: flex; justify-content: space-between; align-items: center; }
+  .match-teams { display: flex; justify-content: space-between; font-weight: bold; margin: 5px 0; }
+  .match-odds { display: flex; gap: 5px; justify-content: flex-end; margin-top: 8px; }
+  .odds-btn { background: #1a1e2b; border: 1px solid #333; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
+  
+  .main-btn { background: linear-gradient(135deg, #f3b936, #c28d1b); color: #000; width: 100%; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; border: none; cursor: pointer; margin-top: 10px; }
+  .ghost-btn { background: transparent; color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; }
+  
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0 20px; z-index: 100; }
+  .nav-item { color: var(--muted); font-size: 11px; text-align: center; cursor: pointer; width: 25%; }
+  .nav-item.active { color: var(--gold); }
+  .nav-item i { font-style: normal; font-size: 20px; display: block; margin-bottom: 4px; }
+  
+  .field input { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-bottom: 10px; }
+  .field input:focus { border-color: var(--gold); outline: none; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="logo"><div class="logo-img">C</div> CASH</div>
+    <div onclick="go('account')" style="color:var(--muted); font-size:12px; cursor:pointer;">👤 حسابي</div>
+  </header>
+
+  <!-- === الرئيسية === -->
+  <div id="home" class="view active">
+    <div style="background:var(--card); padding:15px; border-radius:16px; text-align:center; margin-bottom:15px;">
+      <div style="color:var(--muted); font-size:13px;">رصيدك الأساسي</div>
+      <h1 id="homeBal" style="color:var(--gold); margin:5px 0;">0.00 EGP</h1>
+      <button class="main-btn" onclick="go('deposit')">💳 طلب إيداع</button>
+      <button class="ghost-btn" style="margin-top:10px;" onclick="go('withdraw')">💰 طلب سحب</button>
+    </div>
+
+    <!-- قسم الرياضة الحية -->
+    <h3 style="margin:0 0 5px 0;">⚽ المباريات الحية (Live)</h3>
+    <div id="sportsSection" style="margin-bottom:15px;">جاري تحميل المباريات...</div>
+
+    <h3 style="margin:10px 0 5px;">🎰 ألعاب CASH الحصرية</h3>
+    <div class="games-grid" id="gamesGrid">جاري التحميل...</div>
+  </div>
+
+  <!-- === منطقة اللعب (يتم تحميل اللعبة هنا) === -->
+  <div id="game-play-area" class="view">
+    <button onclick="go('home')" style="background:transparent; color:var(--muted); border:none; font-size:14px; margin-bottom:10px; cursor:pointer;">↩ العودة للصالة</button>
+    <div class="game-wrapper">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="game-title" style="margin:0; font-size:18px; color:var(--gold);">تحميل اللعبة...</h2>
+        <button class="rules-btn" id="rulesToggleBtn" onclick="toggleRules()">📜 القواعد</button>
+      </div>
+      <div id="rulesContainer" style="display:none;"></div>
+      <div id="game-interface" style="margin:10px 0; min-height:120px; background:var(--bg); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--muted);">اختر رهانك وابدأ</div>
+      <div style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+        <input id="stakeInput" type="number" value="10" style="padding:10px; background:#1a1e2b; border:1px solid #333; color:#fff; border-radius:8px; width:100px; text-align:center;">
+        <button class="game-ctrl-btn" onclick="playCurrentGame()">ابدأ الرهان</button>
+      </div>
+      <div id="game-result" style="margin-top:15px; font-weight:bold; font-size:16px; min-height:30px; text-align:center;"></div>
+    </div>
+  </div>
+
+  <!-- === الإيداع === -->
+  <div id="deposit" class="view"><h3>💳 طلب إيداع</h3><p style="color:var(--muted); font-size:13px;">سيتم مراجعة الطلب يدوياً من قبل الإدارة.</p><div class="field"><input id="depAmount" type="number" placeholder="المبلغ (EGP)"></div><div class="field"><input id="depMethod" type="text" placeholder="طريقة الدفع (فودافون كاش، إلخ)"></div><button class="main-btn" onclick="requestDeposit()">رفع الطلب للموافقة</button><p id="depMsg" style="text-align:center; margin-top:10px; font-size:14px;"></p></div>
+  <!-- === السحب === -->
+  <div id="withdraw" class="view"><h3>💰 طلب سحب</h3><p style="color:var(--muted); font-size:13px;">يتم خصم الرصيد فوراً ومراجعة الطلب يدوياً.</p><div class="field"><input id="withAmount" type="number" placeholder="المبلغ (EGP)"></div><div class="field"><input id="withDest" type="text" placeholder="رقم المحفظة أو البنك"></div><button class="main-btn" onclick="requestWithdraw()">رفع طلب السحب</button></div>
+
+  <!-- === الحساب والأدمن === -->
+  <div id="account" class="view">
+    <div id="loginArea">
+      <h3 style="text-align:center;">تسجيل الدخول</h3>
+      <div class="field"><input id="email" type="email" placeholder="البريد الإلكتروني"></div>
+      <div class="field"><input id="password" type="password" placeholder="كلمة المرور"></div>
+      <button class="main-btn" onclick="login()">دخول</button>
+      <button class="ghost-btn" onclick="register()">إنشاء حساب جديد</button>
+    </div>
+    
+    <div id="profileArea" style="display:none;">
+      <h3>👤 مرحباً، <span id="profName"></span></h3>
+      
+      <div id="recentHistory" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:15px; font-size:13px;">
+        <b>آخر 5 معاملات مالية</b><br>
+        <div id="historyList">لا يوجد سجل بعد</div>
+      </div>
+
+      <!-- لوحة الأدمن (لن تظهر إلا للأدمن) -->
+      <div id="adminPanel" style="display:none; background:#1a0f0f; border:1px solid #4a2020; border-radius:16px; padding:15px; margin-bottom:15px;">
+        <h4 style="color:var(--red); margin-top:0;">🔐 لوحة إدارة المنصة</h4>
+        <div id="adminStats" style="font-size:14px;"></div>
+      </div>
+      
+      <button class="ghost-btn" style="border-color:var(--red); color:var(--red);" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  
+  <!-- === شريط التنقل السفلي (مثل التطبيقات) === -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="go('home')"><i>🏠</i>الرئيسية</div>
+    <div class="nav-item" onclick="go('game-play-area')"><i>🎮</i>اللعب</div>
+    <div class="nav-item" onclick="go('deposit')"><i>💳</i>المحفظة</div>
+    <div class="nav-item" onclick="go('account')"><i>👤</i>حسابي</div>
+  </nav>
+</div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('token');
+let user = null;
+let currentGameId = null;
+
+// --- دالة التنقل ---
+function go(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(view).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(view === 'home') document.querySelector('.nav-item').classList.add('active');
+  if(view === 'game-play-area') document.querySelectorAll('.nav-item')[1].classList.add('active');
+  if(view === 'deposit') document.querySelectorAll('.nav-item')[2].classList.add('active');
+  if(view === 'account') document.querySelectorAll('.nav-item')[3].classList.add('active');
+  if(view === 'home' || view === 'account') loadUserData();
+}
+
+// --- تسجيل الدخول وإنشاء الحساب ---
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const res = await fetch(API+'/login', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password})});
+  const data = await res.json();
+  if(res.ok) { localStorage.setItem('token', data.token); token = data.token; location.reload(); }
+  else alert(data.error);
+}
+async function register() {
+  const name = prompt('أدخل اسمك الكامل:');
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  if(!name || !email || !password) return alert('املأ جميع الحقول');
+  const res = await fetch(API+'/register', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password})});
+  const data = await res.json();
+  if(res.ok) { alert('تم إنشاء الحساب! سجل دخولك الآن.'); } else alert(data.error);
+}
+function logout() { localStorage.removeItem('token'); location.reload(); }
+
+// --- تحميل بيانات المستخدم ---
+async function loadUserData() {
+  if(!token) return;
+  const res = await fetch(API+'/me', {headers:{'Authorization':'Bearer '+token}});
+  if(!res.ok) return logout();
+  user = await res.json();
+  
+  document.getElementById('loginArea').style.display = 'none';
+  document.getElementById('profileArea').style.display = 'block';
+  document.getElementById('homeBal').innerText = `${user.balance.toFixed(2)} EGP`;
+  document.getElementById('profName').innerText = user.name;
+
+  // تحديث المعاملات
+  const txs = await fetch(API+'/transactions', {headers:{'Authorization':'Bearer '+token}});
+  const history = await txs.json();
+  document.getElementById('historyList').innerHTML = history.slice(0,5).map(t => `<div style="display:flex; justify-content:space-between; padding:2px 0; border-bottom:1px solid var(--border);"><span>${t.description}</span><b style="color:${t.amount > 0 ? 'var(--green)' : 'var(--text)'};">${t.amount > 0 ? '+' : ''}${t.amount.toFixed(2)} EGP</b></div>`).join('') || 'لا توجد معاملات.';
+  
+  // لوحة الأدمن
+  if(user.role === 'admin') {
+    document.getElementById('adminPanel').style.display = 'block';
+    const dash = await fetch(API+'/admin/dashboard', {headers:{'Authorization':'Bearer '+token}});
+    const data = await dash.json();
+    document.getElementById('adminStats').innerHTML = `
+      <div style="margin-bottom:10px;">إجمالي المستخدمين: <b>${data.totalUsers}</b> | إجمالي الرصيد: <b>${data.balance.toFixed(2)} EGP</b></div>
+      <div style="font-weight:bold; margin:5px 0;">طلبات الإيداع المعلقة:</div>
+      ${data.pendingDeposits.map(d => `<div style="font-size:12px; background:#222; padding:5px; margin:3px 0; display:flex; justify-content:space-between;"><span>${d.user.email}: ${d.amount}EGP</span> <button style="background:#f3b936; border:none; padding:2px 10px; border-radius:4px; cursor:pointer;" onclick="approveDeposit(${d.id})">موافقة</button></div>`).join('') || 'لا يوجد طلبات'}
+    `;
+  }
+}
+async function approveDeposit(id) { await fetch(API+`/admin/deposits/${id}/approve`, {method:'POST',headers:{'Authorization':'Bearer '+token}}); loadUserData(); }
+
+// --- الإيداع والسحب ---
+async function requestDeposit() {
+  if(!token) return alert('سجل الدخول أولاً');
+  const amount = document.getElementById('depAmount').value;
+  const method = document.getElementById('depMethod').value;
+  const res = await fetch(API+'/deposits/request', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({amount:Number(amount), method})});
+  if(res.ok) document.getElementById('depMsg').innerText = '✅ تم رفع الطلب للإدارة بنجاح!';
+  else alert('حدث خطأ');
+}
+async function requestWithdraw() {
+  if(!token) return alert('سجل الدخول أولاً');
+  const amount = document.getElementById('withAmount').value;
+  const destination = document.getElementById('withDest').value;
+  const res = await fetch(API+'/withdrawals/request', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({amount:Number(amount), destination})});
+  if(res.ok) { alert('📤 تم خصم الرصيد ورفع الطلب للإدارة.'); loadUserData(); }
+  else alert('خطأ في الطلب');
+}
+
+// --- تحميل الألعاب (مع الصور) ---
+async function initGamesAndSports() {
+  if(!token) return;
+  // تحميل الألعاب
+  const gRes = await fetch(API+'/games/list', {headers:{'Authorization':'Bearer '+token}});
+  const games = await gRes.json();
+  document.getElementById('gamesGrid').innerHTML = games.map(g => `
+    <div class="game-tile" onclick="selectGame('${g.id}')">
+      <img src="${g.image}" class="game-img" alt="${g.name}" onerror="this.style.display='none'">
+      <h4>${g.name}</h4>
+      <div class="badge">${g.maxWin || 'x100'}</div>
+    </div>
+  `).join('');
+
+  // تحميل الرياضة
+  const sRes = await fetch(API+'/sports', {headers:{'Authorization':'Bearer '+token}});
+  const sports = await sRes.json();
+  if(sports.message) {
+    document.getElementById('sportsSection').innerHTML = `<p style="color:var(--muted); font-size:13px;">🔧 ${sports.message}</p>`;
+  } else {
+    document.getElementById('sportsSection').innerHTML = sports.map(m => `
+      <div class="match-card">
+        <div class="match-top"><span style="color:var(--muted); font-size:11px;">${m.league}</span> <span style="color:var(--gold); font-size:11px;">${m.time}</span></div>
+        <div class="match-teams"><span>${m.home}</span> <span>VS</span> <span>${m.away}</span></div>
+        <div class="match-odds">
+          <button class="odds-btn" onclick="betOnMatch('${m.id}', 'Home', ${m.odds[0]})">${m.odds[0]}</button>
+          <button class="odds-btn" onclick="betOnMatch('${m.id}', 'Draw', ${m.odds[1]})">${m.odds[1]}</button>
+          <button class="odds-btn" onclick="betOnMatch('${m.id}', 'Away', ${m.odds[2]})">${m.odds[2]}</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+async function betOnMatch(matchId, type, odds) {
+  if(!user) return alert('سجل الدخول أولاً');
+  const stake = prompt(`أدخل مبلغ الرهان على ${type} (معامل ${odds}):`, "10");
+  if(!stake || isNaN(stake)) return;
+  alert(`✅ تم وضع رهانك بنجاح على ${type}. المعامل ${odds}.`);
+  // (في النسخة الحقيقية المتطورة، يتم هنا إنشاء طلب رهان رياضي في قاعدة البيانات)
+}
+
+// --- تشغيل الألعاب ---
+async function selectGame(id) {
+  currentGameId = id;
+  document.getElementById('game-result').innerText = '';
+  document.getElementById('rulesContainer').style.display = 'none';
+  const res = await fetch(API+'/games/details/'+id, {headers:{'Authorization':'Bearer '+token}});
+  const game = await res.json();
+  document.getElementById('game-title').innerText = game.name;
+  
+  // واجهة اللعب
+  document.getElementById('game-interface').innerHTML = `<div style="padding:20px;"><p style="color:var(--gold); font-size:24px;">🎲</p><p style="color:var(--muted);">اضغط "ابدأ الرهان" للعب ${game.name}</p></div>`;
+  go('game-play-area');
+
+  // إضافة القواعد (للعبة السلوت فقط)
+  if(game.payoutTable) {
+    const colors = ['red','purple','green','orange','cyan','blue'];
+    const colorMap = {'red':'#ff4d4d','purple':'#a64dff','green':'#20c997','orange':'#ff9900','cyan':'#00bcd4','blue':'#2979ff'};
+    let html = `<div class="rules-table"><div></div>${colors.map(c=>`<div><span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:${colorMap[c]};"></span></div>`).join('')}`;
+    game.payoutTable.forEach(r => {
+      html += `<div style="background:#222;">x${r.count}</div>`;
+      html += `<div>${r.red}</div><div>${r.purple}</div><div>${r.green}</div><div>${r.orange}</div><div>${r.cyan}</div><div>${r.blue}</div>`;
+    });
+    html += `</div><ul style="text-align:right; font-size:12px; color:var(--muted); margin-top:10px; padding-right:15px;"><li>احصل على 5 رموز متجاورة من نفس اللون لتربح.</li><li>الرموز البرية تحل محل أي لون آخر.</li></ul>`;
+    document.getElementById('rulesContainer').innerHTML = html;
+  } else {
+    document.getElementById('rulesContainer').innerHTML = `<p style="color:var(--muted); font-size:12px; text-align:center;">تعتمد هذه اللعبة على نظام RNG عشوائي بنسبة 100%.</p>`;
+  }
+}
+
+function toggleRules() {
+  const c = document.getElementById('rulesContainer');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+}
+
+async function playCurrentGame() {
+  if(!currentGameId) return alert('اختر لعبة أولاً');
+  const stake = document.getElementById('stakeInput').value;
+  if(!stake || isNaN(stake)) return alert('أدخل مبلغ صحيح');
+  
+  const res = await fetch(API+'/games/play', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({gameId:currentGameId, stake:Number(stake)})});
+  const data = await res.json();
+  if(res.ok) {
+    const div = document.getElementById('game-result');
+    if(data.win) { div.style.color = 'var(--green)'; div.innerHTML = `🎉 فزت! ربحت ${data.payout} EGP (معامل ${data.multiplier}x)`; }
+    else { div.style.color = 'var(--red)'; div.innerHTML = `💸 خسارة ${stake} EGP`; }
+    loadUserData();
+  } else alert(data.error || 'حدث خطأ في النظام');
+}
+
+// --- بدء التطبيق ---
+loadUserData();
+initGamesAndSports();
+</script>
+</body>
+</html>
