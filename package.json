@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "migrate": "npx prisma migrate dev --name init"
+    "migrate": "npx prisma migrate dev --name init",
+    "seed": "node prisma/seed.js",
+    "prepare": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
