@@ -184,7 +184,7 @@ app.post('/api/admin/users/:id/ban', authenticate, requireAdmin, async (req, res
 
 // --- 8. ملفات الواجهة الأمامية ---
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 CASH v2.0 Ultimate Platform Running on port ${PORT}`);
