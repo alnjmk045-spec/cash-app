@@ -1,0 +1,21 @@
+{
+  "name": "CASH v2.0",
+  "short_name": "CASH",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0d15",
+  "theme_color": "#f3b936",
+  "description": "CASH v2.0 Ultimate Platform",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluency/192/diamond.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://img.icons8.com/fluency/512/diamond.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

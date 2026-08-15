@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<title>CASH - منصة الألعاب والمراهنات الرياضية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b0d15">
+<!-- مكتبة أيقونات عالية الجودة -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root { --bg: #0b0d15; --card: #161a25; --gold: #f3b936; --text: #ffffff; --muted: #6f7787; --border: #232733; --red: #ff4d4d; --green: #20c997; }
+  * { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; }
+  .view { display: none; padding: 15px; }
+  .view.active { display: block; }
+  
+  /* --- الهيدر --- */
+  .header { background: rgba(11,13,21,0.95); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 30; }
+  .logo { font-weight: 900; font-size: 22px; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+
+  /* --- صالة الألعاب (واقعية أكثر) --- */
+  .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+  .game-tile { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+  .game-tile:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 5px 15px rgba(243,185,54,0.15); }
+  .game-tile img { width: 60px; height: 60px; object-fit: contain; margin: 0 auto; display: block; }
+  .game-tile h4 { margin: 10px 0 0; font-size: 14px; font-weight: 700; }
+  .game-tile .badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: #000; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+
+  /* --- واجهة ألعاب الكازينو (Slots & Crash) --- */
+  .game-wrapper { background: #0f111a; border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 10px; text-align: center; }
+  .game-title { color: var(--gold); font-size: 20px; margin-bottom: 10px; }
+  
+  /* لعبة السلوت (تصميم احترافي) */
+  .slot-machine-box { background: linear-gradient(145deg, #1a1e2b, #090b10); border: 2px solid var(--gold); border-radius: 16px; padding: 15px; margin: 15px 0; }
+  .slot-reels { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
+  .slot-reel { width: 50px; height: 60px; background: #fff; color: #000; font-size: 30px; display: grid; place-items: center; border-radius: 8px; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
+  .slot-reel.spinning { animation: spinSlot 0.1s infinite linear; }
+  @keyframes spinSlot { 100% { transform: rotateX(360deg); } }
+
+  /* لعبة Crash (جرافيك خطي) */
+  #crash-canvas { width: 100%; height: 160px; background: #080a0f; border-radius: 12px; border: 1px solid var(--border); margin: 10px 0; }
+  .crash-multiplier { font-size: 28px; font-weight: 900; color: var(--gold); }
+
+  /* --- أزرار التحكم --- */
+  .ctrl-btn { background: linear-gradient(135deg, #f3b936, #c28d1b); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 800; border: none; cursor: pointer; font-size: 16px; box-shadow: 0 6px 18px rgba(243,185,54,0.18); }
+  .main-btn { background: linear-gradient(135deg, #f3b936, #c28d1b); color: #000; width: 100%; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; border: none; cursor: pointer; }
+  .ghost-btn { background: transparent; color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; }
+
+  /* --- الرياضة --- */
+  .match-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; }
+  .match-odds { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
+  .odds-btn { background: #1a1e2b; border: 1px solid #333; color: #fff; padding: 6px 15px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+  
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 6px; left: 50%; transform: translateX(-50%); }
+  .nav-item { color: var(--muted); font-size: 11px; text-align: center; cursor: pointer; width: 25%; }
+  .nav-item.active { color: var(--gold); }
+  .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+  
+  .field input { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header"><div class="logo">💎 CASH</div><div onclick="go('account')" style="color:var(--muted); font-size:12px; cursor:pointer;"><i class="fas fa-user"></i> حسابي</div></header>
+
+  <div id="home" class="view active">
+    <div style="background:var(--card); padding:15px; border-radius:16px; text-align:center; margin-bottom:15px; border:1px solid var(--border);">
+      <div style="color:var(--muted); font-size:13px;">رصيدك الأساسي</div>
+      <h1 id="homeBal" style="color:var(--gold); margin:5px 0; font-size:28px;">0.00 EGP</h1>
+      <button class="main-btn" onclick="go('deposit')"><i class="fas fa-arrow-down"></i> طلب إيداع</button>
+      <button class="ghost-btn" style="margin-top:10px;" onclick="go('withdraw')"><i class="fas fa-arrow-up"></i> طلب سحب</button>
+    </div>
+
+    <h3 style="margin:0 0 5px 0;"><i class="fas fa-futbol"></i> المباريات الحية (Live)</h3>
+    <div id="sportsSection" style="margin-bottom:15px; font-size:13px;">جاري تحميل المباريات...</div>
+
+    <h3 style="margin:10px 0 5px;"><i class="fas fa-dice"></i> ألعاب CASH الحصرية</h3>
+    <div class="games-grid" id="gamesGrid">جاري التحميل...</div>
+  </div>
+
+  <div id="game-play-area" class="view">
+    <button onclick="go('home')" style="background:transparent; color:var(--muted); border:none; font-size:14px; margin-bottom:10px; cursor:pointer;"><i class="fas fa-arrow-left"></i> العودة</button>
+    <div class="game-wrapper">
+      <div class="game-title" id="game-title">تحميل اللعبة...</div>
+      <div id="game-interface" style="margin:10px 0; min-height:140px; display:flex; align-items:center; justify-content:center; background:#080a0f; border-radius:12px; border:1px solid var(--border);">
+      </div>
+      
+      <div style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
+        <div style="background:#1a1e2b; padding:8px 15px; border-radius:50px; border:1px solid var(--border); display:flex; align-items:center;">
+          <span style="color:var(--gold); margin-left:5px;">EGP</span>
+          <input id="stakeInput" type="number" value="10" style="background:transparent; border:none; color:#fff; width:60px; text-align:center; outline:none; font-weight:bold;">
+        </div>
+        <button class="ctrl-btn" onclick="playCurrentGame()"><i class="fas fa-play"></i> ابدأ الرهان</button>
+      </div>
+      
+      <div id="game-result" style="margin-top:15px; font-weight:bold; font-size:18px; min-height:30px; text-align:center;"></div>
+    </div>
+  </div>
+
+  <div id="deposit" class="view"><h3><i class="fas fa-arrow-down"></i> طلب إيداع</h3><p style="color:var(--muted); font-size:13px;">سيتم مراجعة الطلب يدوياً من الإدارة.</p>
+    <div class="field"><input id="depAmount" type="number" placeholder="المبلغ (EGP)" value="500"></div>
+    <div class="field"><select id="depMethod"><option value="vodafone">Vodafone Cash</option><option value="orange">Orange Money</option><option value="etisalat">Etisalat Cash</option></select></div>
+    <button class="main-btn" onclick="requestDeposit()">ارسال الطلب</button>
+    <div id="depMsg" style="margin-top:8px;color:var(--muted);"></div>
+  </div>
+  <div id="withdraw" class="view"><h3><i class="fas fa-arrow-up"></i> طلب سحب</h3><p style="color:var(--muted); font-size:13px;">يتم خصم الرصيد فوراً.</p><div class="field"><input id="withAmount" type="number" placeholder="المبلغ (EGP)"></div><div class="field"><input id="withDest" type="text" placeholder="وجهة الدفع (مثال: رقم محفظة)"></div><button class="main-btn" onclick="requestWithdraw()">اطلب سحب</button></div>
+
+  <div id="account" class="view">
+    <div id="loginArea">
+      <h3 style="text-align:center;">تسجيل الدخول</h3>
+      <div class="field"><input id="email" type="email" placeholder="البريد الإلكتروني"></div>
+      <div class="field"><input id="password" type="password" placeholder="كلمة المرور"></div>
+      <button class="main-btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> دخول</button>
+      <button class="ghost-btn" onclick="register()"><i class="fas fa-user-plus"></i> إنشاء حساب جديد</button>
+    </div>
+    
+    <div id="profileArea" style="display:none;">
+      <h3><i class="fas fa-user-circle"></i> مرحباً، <span id="profName"></span></h3>
+      <div id="adminPanel" style="display:none; background:#1a0f0f; border:1px solid #4a2020; border-radius:12px; padding:15px; margin-bottom:15px;"><h4 style="color:var(--red); margin-top:0;"><i class="fas fa-cog"></i> لوحة الإدارة</h4><div id="adminStats"></div></div>
+      <button class="ghost-btn" style="border-color:var(--red); color:var(--red);" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+    </div>
+  </div>
+  
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="go('home')"><i class="fas fa-home"></i>الرئيسية</div>
+    <div class="nav-item" onclick="go('game-play-area')"><i class="fas fa-gamepad"></i>اللعب</div>
+    <div class="nav-item" onclick="go('deposit')"><i class="fas fa-wallet"></i>المحفظة</div>
+    <div class="nav-item" onclick="go('account')"><i class="fas fa-user"></i>حسابي</div>
+  </nav>
+</div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('token');
+let user = null;
+let currentGameId = null;
+
+function go(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(view).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(view === 'home') document.querySelector('.nav-item').classList.add('active');
+  if(view === 'game-play-area') document.querySelectorAll('.nav-item')[1].classList.add('active');
+  if(view === 'deposit') document.querySelectorAll('.nav-item')[2].classList.add('active');
+  if(view === 'account') document.querySelectorAll('.nav-item')[3].classList.add('active');
+  if(view === 'home' || view === 'account') loadUserData();
+}
+
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const res = await fetch(API+'/login', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password})});
+  const data = await res.json();
+  if(res.ok) { localStorage.setItem('token', data.token); token = data.token; location.reload(); }
+  else alert(data.error);
+}
+async function register() {
+  const name = prompt('أدخل اسمك الكامل:');
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  if(!name || !email || !password) return alert('املأ جميع الحقول');
+  if(password.length < 6) return alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  const res = await fetch(API+'/register', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password})});
+  const data = await res.json();
+  if(res.ok) { alert('تم إنشاء الحساب! سجل دخولك الآن.'); } else alert(data.error);
+}
+function logout() { localStorage.removeItem('token'); location.reload(); }
+
+async function loadUserData() {
+  if(!token) return;
+  const res = await fetch(API+'/me', {headers:{'Authorization':'Bearer '+token}});
+  if(!res.ok) return logout();
+  user = await res.json();
+  document.getElementById('loginArea').style.display = 'none';
+  document.getElementById('profileArea').style.display = 'block';
+  document.getElementById('homeBal').innerText = `${user.balance.toFixed(2)} EGP`;
+  document.getElementById('profName').innerText = user.name;
+  if(user.role === 'admin') {
+    document.getElementById('adminPanel').style.display = 'block';
+    const dash = await fetch(API+'/admin/dashboard', {headers:{'Authorization':'Bearer '+token}});
+    const data = await dash.json();
+    document.getElementById('adminStats').innerHTML = `
+      <div>إجمالي المستخدمين: <b style="color:var(--gold)">${data.totalUsers}</b></div>
+      ${data.pendingDeposits.map(d => `<div style="display:flex; justify-content:space-between; background:#000; padding:5px; margin:3px 0; border-radius:4px;"><span>${d.user.email}: ${d.amount}EGP</span><button onclick="approveDeposit(${d.id})" class="main-btn">أوافق</button></div>`).join('')}
+    `;
+  }
+}
+async function approveDeposit(id) { await fetch(API+`/admin/deposits/${id}/approve`, {method:'POST',headers:{'Authorization':'Bearer '+token}}); loadUserData(); }
+
+async function requestDeposit() {
+  if(!token) return alert('سجل الدخول أولاً');
+  const amount = document.getElementById('depAmount').value;
+  const method = document.getElementById('depMethod').value;
+  const res = await fetch(API+'/deposits/request', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({amount:Number(amount), method})});
+  if(res.ok) document.getElementById('depMsg').innerText = '✅ تم رفع الطلب للإدارة!';
+}
+async function requestWithdraw() {
+  if(!token) return alert('سجل الدخول أولاً');
+  const amount = document.getElementById('withAmount').value;
+  const destination = document.getElementById('withDest').value;
+  const res = await fetch(API+'/withdrawals/request', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({amount:Number(amount), destination})});
+  if(res.ok) { alert('📤 تم الخصم ورفع الطلب للإدارة.'); loadUserData(); }
+}
+
+async function initGamesAndSports() {
+  if(!token) return;
+  const gRes = await fetch(API+'/games/list', {headers:{'Authorization':'Bearer '+token}});
+  const games = await gRes.json();
+  document.getElementById('gamesGrid').innerHTML = games.slice(0, 10).map(g => `
+    <div class="game-tile" onclick="selectGame('${g.id}')">
+      <img src="${g.image}" onerror="this.src='https://img.icons8.com/fluency/96/dice.png'">
+      <h4>${g.name}</h4>
+      <div class="badge">${g.maxWin || 'x100'}</div>
+    </div>
+  `).join('');
+  
+  const sRes = await fetch(API+'/sports', {headers:{'Authorization':'Bearer '+token}});
+  const sports = await sRes.json();
+  if(sports.message) document.getElementById('sportsSection').innerHTML = `<p style="color:var(--muted);">🔧 ${sports.message}</p>`;
+  else document.getElementById('sportsSection').innerHTML = sports.slice(0,3).map(m => `
+    <div class="match-card">
+      <div style="color:var(--muted); font-size:12px; display:flex; justify-content:space-between;">${m.league} <span style="color:var(--gold);">${m.time}</span></div>
+      <div style="font-weight:bold; font-size:15px; margin:5px 0;">${m.home} VS ${m.away}</div>
+      <div class="match-odds">${m.odds.map(o => `<div class="odds-btn">${o}</div>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+async function selectGame(id) {
+  currentGameId = id; document.getElementById('game-result').innerText = '';
+  const res = await fetch(API+'/games/details/'+id, {headers:{'Authorization':'Bearer '+token}});
+  const game = await res.json();
+  document.getElementById('game-title').innerText = game.name;
+  if(id.includes('slots') || id === 'jewel_slots') {
+    document.getElementById('game-interface').innerHTML = `
+      <div class="slot-machine-box">
+        <div class="slot-reels">
+          <div class="slot-reel" id="reel1">🍒</div>
+          <div class="slot-reel" id="reel2">🍋</div>
+          <div class="slot-reel" id="reel3">🔔</div>
+        </div>
+        <div style="color:var(--muted); font-size:12px;">إضغط "ابدأ" لتدوير العجلات!</div>
+      </div>
+    `;
+  } else if(id === 'crash') {
+    document.getElementById('game-interface').innerHTML = `
+      <div><canvas id="crash-canvas" height="160"></canvas></div>
+      <div class="crash-multiplier">المضاعف: <span id="crash-multiplier">1.00x</span></div>
+    `;
+  } else {
+    document.getElementById('game-interface').innerHTML = `<div style="padding:20px; color:var(--muted); font-size:18px;">🎲 استعد للعب ${game.name}</div>`;
+  }
+  go('game-play-area');
+}
+
+async function playCurrentGame() {
+  if(!currentGameId) return alert('اختر لعبة أولاً');
+  const stake = document.getElementById('stakeInput').value;
+  if(!stake || isNaN(stake)) return alert('أدخل مبلغ صحيح');
+  
+  if(currentGameId === 'crash') animateCrash();
+  if(currentGameId.includes('slots') || currentGameId === 'jewel_slots') {
+    document.querySelectorAll('.slot-reel').forEach(el => el.classList.add('spinning'));
+  }
+
+  const res = await fetch(API+'/games/play', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({gameId:currentGameId, stake:Number(stake)})});
+  const data = await res.json();
+  if(res.ok) {
+    setTimeout(() => {
+      document.querySelectorAll('.slot-reel').forEach(el => el.classList.remove('spinning'));
+      const div = document.getElementById('game-result');
+      if(data.win) { div.style.color = 'var(--green)'; div.innerHTML = `🎉 فزت! ربحت ${data.payout} EGP`; }
+      else { div.style.color = 'var(--red)'; div.innerHTML = `💸 خسارة ${stake} EGP`; }
+      loadUserData();
+    }, 1500);
+  } else alert(data.error);
+}
+
+let anim;
+function animateCrash() {
+  const canvas = document.getElementById('crash-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  let mult = 1.0, x=10, y=140;
+  function draw() {
+    mult += 0.05; y -= 3;
+    ctx.strokeStyle = "#f3b936"; ctx.lineWidth = 3;
+    ctx.lineTo(x+5, y); ctx.stroke();
+    x += 5;
+    document.getElementById('crash-multiplier').innerText = mult.toFixed(2)+'x';
+    if(x > canvas.width) return;
+    anim = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+initGamesAndSports();
+</script>
+
+<script>
+// Service worker registration for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:/app/cash.db"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -16,6 +16,10 @@ model User {
   balance      Float    @default(0.0)
   isBanned     Boolean  @default(false)
   createdAt    DateTime @default(now())
+  emailVerified Boolean @default(false)
+  verificationToken String?
+  twoFactorSecret String?
+  passwordResetToken String?
   
   transactions Transaction[]
   deposits     Deposit[]
